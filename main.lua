@@ -35,6 +35,7 @@ box.once("bootstrap", function()
         { name = 'sent',            type = 'boolean'  },
         { name = 'sendAttempts',    type = 'unsigned' },
         { name = 'sendLockTTL',     type = 'unsigned' },
+        { name = 'sendLockTS',      type = 'double'   },
         { name = 'lastSendAttempt', type = 'double'   }
     })
     box.schema.sequence.create('id_seq',{min=1000, start=1000})
@@ -43,7 +44,11 @@ box.once("bootstrap", function()
         { type = 'TREE', parts = { 'alarm' }, unique = false})
     box.space.tarmon:create_index('host_service',
         { type = 'TREE', parts = { { 'host' }, { 'service' } }, unique = true })
+    box.space.tarmon:create_index('sender',
+        { type = 'TREE', parts = { 'sender' }, unique = false })
 end)
+
+local space = box.space.tarmon
 
 local function handler(req)
     local params = req:json()
@@ -65,7 +70,7 @@ function dump(o)
    end
 end
 
-function add(req)
+local function add(req)
     local params              = req:json()
     ok, validationResult      = avro.validate(schema, params)
     if not ok then
@@ -80,9 +85,9 @@ function add(req)
     params['sender']          = ''
     params['sendAttempts']    = 0
     params['sendLockTTL']     = 0
+    params['sendLockTS']      = 0
     params['lastSendAttempt'] = 0
 
-    local space = box.space.tarmon
     local function get_host_service()
         if space.index.host_service and space.index.host_service:count() > 0 then
             return space.index.host_service:get {params['host'], params['service']}
@@ -107,6 +112,7 @@ function add(req)
             params['sent'],
             params['sendAttempts'],
             params['sendLockTTL'],
+            params['sendLockTS'],
             params['lastSendAttempt']
         }
         resp.status = 201
@@ -135,24 +141,68 @@ console = require('console')
 console.listen('127.0.0.1:3302')
 
 fiber = require('fiber')
-function alarming()
+local function alarming()
     local space          = box.space.tarmon
     while true do
         if space.index.alarm then
             print('PENDING:')
             --for _, tuple in space.index.alarm:select({ clock.time() }, { iterator = 'LT', limit = 44 }) do
-            local result = space.index.alarm:gselect({ clock.time() }, { iterator = 'LT', limit = 44 },{fselect_print=true}) do
-                print(dump(result))
-                io.flush()
+            local formattedResult = space.index.alarm:gselect({ clock.time() }, { iterator = 'LT', limit = 44 },{fselect_print=true})
+            print(formattedResult)
+            local result = space.index.alarm:select({ clock.time() }, { iterator = 'LT', limit = 44 })
+
+            for num, record in pairs(result) do
+                --print(num, record['host'], record['service'], 'Seconds remaining: ' .. record['sendLockTS'] - clock.time())
+                if record['sender'] == '' then
+                    space:update(
+                            record['id'],
+                            {
+                                { '=', 'sender',        box.info.hostname  },
+                                { '=', 'sendLockTTL',   20                 },
+                                { '=', 'sendLockTS',    20 + clock.time()  }
+                            }
+                    )
+                else
+                    if record['sendLockTS'] < clock.time() and not record['sent'] then
+                        space:update(
+                                record['id'],
+                                {
+                                    { '=', 'sender',      '' },
+                                    { '=', 'sendLockTTL', 0  },
+                                    { '=', 'sendLockTS',  0  }
+                                }
+                        )
+                    end
+                end
             end
-            io.flush()
+        io.flush()
         fiber.sleep(5)
         end
     end
 end
 
-alarm_fiber = fiber.create(alarming)
+local function sendAlerts()
+    while true do
+        local function maybe(x) if math.random() < x then return true else return false end end
+        local sent = maybe(0.1)
+        local result = space.index.sender:select( box.info.hostname )
+        for num, record in pairs(result) do
+            if record['sent'] == false then
+                space:update(
+                        record['id'],
+                        {
+                            { '+', 'sendAttempts',  1    },
+                            { '=', 'sent',          sent }
+                        }
+                )
+            end
+        end
+        fiber.sleep(3)
+    end
+end
 
+alarm_fiber = fiber.create(alarming)
+sender_fiber = fiber.create(sendAlerts)
     ----os.execute("sleep " .. tonumber(10))
     --
     --function sleep(n)
