@@ -2,3 +2,5 @@
 app
 *.snap
 *.xlog
+wal
+memtx
