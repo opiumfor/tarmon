@@ -52,8 +52,6 @@ local space = box.space.tarmon
 
 local function handler(req)
     local params = req:json()
-    local pj = json.decode(params)
-
     return req:render{ json = params.service }
 end
 
