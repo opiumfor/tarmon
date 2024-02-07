@@ -24,14 +24,14 @@ box.once("bootstrap", function()
         { type = 'TREE', parts = { 'sender' }, unique = false })
 end)
 
+---- enable console access
+console = require('console')
+console.listen('127.0.0.1:3302')
+
 ---- run http-api
 local server = require('http.server').new(nil, 8080) -- listen *:8080
 server:route({ path = '/add',  method = 'POST'}, 'record#add')
 server:start()
-
----- enable console access
-console = require('console')
-console.listen('127.0.0.1:3302')
 
 ---- run scheduler
 local fiber = require('fiber')

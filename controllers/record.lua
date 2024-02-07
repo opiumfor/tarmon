@@ -1,5 +1,5 @@
 local avro = require 'avro_schema'
-local requestSchema = require('schemas/request')
+local request_schema = require('schemas/request')
 local clock = require 'clock'
 local space = box.space.tarmon
 local exports = {}
@@ -19,9 +19,9 @@ end
 
 exports.add = function(req)
     local params              = req:json()
-    ok, validationResult      = avro.validate(requestSchema, params)
+    local ok, validation_res  = avro.validate(request_schema, params)
     if not ok then
-        local resp            = req:render({text = validationResult})
+        local resp            = req:render({text = validation_res})
         resp.status           = 400
         return resp
     end
@@ -44,7 +44,7 @@ exports.add = function(req)
     local host_service = get_host_service()
     -- req is a Request object
     -- resp is a Response object
-    local resp = req:render({text = req.method..' '..req.path..' '..dump(validationResult) })
+    local resp = req:render({text = req.method..' '..req.path..' '..dump(validation_res) })
     resp.headers['Server'] = 'TarMon v0.1';
 
     if not host_service then

@@ -13,7 +13,7 @@ exports.run = function()
             print(formattedResult)
             local result = space.index.alarm:select({ clock.time() }, { iterator = 'LT', limit = 44 })
 
-            for num, record in pairs(result) do
+            for _, record in pairs(result) do
                 --print(num, record['host'], record['service'], 'Seconds remaining: ' .. record['sendLockTS'] - clock.time())
                 if record['sender'] == '' then
                     space:update(
