@@ -1,0 +1,5 @@
+
+return {
+    api_url = os.getenv('API_URL') or '127.0.0.1:8081',
+    api_key = os.getenv('API_KEY') or '1234'
+}

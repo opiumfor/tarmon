@@ -4,3 +4,4 @@ app
 *.xlog
 wal
 memtx
+config.lua

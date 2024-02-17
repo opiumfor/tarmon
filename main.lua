@@ -1,7 +1,7 @@
 #!/usr/bin/env tarantool
 local clock = require 'clock'
 local recordFields = require('models/record')
-
+--local cfg = require('config')
 ---- Configure database
 box.cfg {
     listen              = 3301,
