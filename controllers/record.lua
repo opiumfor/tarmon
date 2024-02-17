@@ -29,6 +29,7 @@ exports.add = function(req)
     params['seen']            = clock.time()
     params['alarm']           = params['seen'] + params['ttl']
     params['sent']            = false
+    params['sentOk']          = false
     params['sender']          = ''
     params['sendAttempts']    = 0
     params['sendLockTTL']     = 0
@@ -57,6 +58,7 @@ exports.add = function(req)
             params['alarm'],
             params['sender'],
             params['sent'],
+            params['sentOk'],
             params['sendAttempts'],
             params['sendLockTTL'],
             params['sendLockTS'],

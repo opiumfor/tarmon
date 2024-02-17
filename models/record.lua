@@ -7,6 +7,7 @@ return {
     { name = 'alarm',           type = 'double'   },
     { name = 'sender',          type = 'string'   },
     { name = 'sent',            type = 'boolean'  },
+    { name = 'sentOk',          type = 'boolean'  },
     { name = 'sendAttempts',    type = 'unsigned' },
     { name = 'sendLockTTL',     type = 'unsigned' },
     { name = 'sendLockTS',      type = 'double'   },
