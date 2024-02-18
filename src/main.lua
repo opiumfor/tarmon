@@ -1,7 +1,8 @@
 #!/usr/bin/env tarantool
 local clock = require 'clock'
-local recordFields = require('models/record')
---local cfg = require('config')
+local recordFields = require('models.record')
+local cfg = require('config')
+print(package.path)
 ---- Configure database
 box.cfg {
     listen              = 3301,
@@ -25,7 +26,7 @@ box.once("bootstrap", function()
 end)
 
 ---- enable console access
-console = require('console')
+local console = require('console')
 console.listen('127.0.0.1:3302')
 
 ---- run http-api
@@ -36,8 +37,8 @@ server:start()
 ---- run scheduler
 local fiber = require('fiber')
 local scheduler = require('fibers/scheduler')
-scheduler_fiber = fiber.create(scheduler.run)
+local scheduler_fiber = fiber.create(scheduler.run)
 
 ---- run sender
 local sender = require('fibers/sender')
-sender_fiber = fiber.create(sender.run)
+local sender_fiber = fiber.create(sender.run)

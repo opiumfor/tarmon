@@ -1,6 +1,7 @@
 local space = box.space.tarmon
 local fiber = require('fiber')
-local vk_monitoring = dofile('senders/vk_monitoring.lua')
+--local vk_monitoring = dofile('senders/vk_monitoring.lua')
+local vk_monitoring = require('senders.vk_monitoring')
 local clock = require 'clock'
 
 local exports = {}

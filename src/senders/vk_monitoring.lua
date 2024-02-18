@@ -1,5 +1,21 @@
 local vk_monitoring = {alert = {}}
-local cfg = dofile('config.lua')
+--local cfg = dofile('config.lua')
+local cfg = require('conf')
+
+local function dump(o)
+   if type(o) == 'table' then
+      local s = '{ '
+      for k,v in pairs(o) do
+         if type(k) ~= 'number' then k = '"'..k..'"' end
+         s = s .. '['..k..'] = ' .. dump(v) .. ','
+      end
+      return s .. '} '
+   else
+      return tostring(o)
+   end
+end
+
+print(dump(cfg))
 local api_url = cfg.api_url
 local api_key = cfg.api_key
 print('API_URL: '..api_url, 'API_KEY: '..api_key)

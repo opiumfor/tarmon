@@ -5,3 +5,7 @@ app
 wal
 memtx
 config.lua
+/luarocks
+/lua
+/lua_modules
+/.luarocks
